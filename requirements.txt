@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+ultralytics
+pandas
+easyocr
+opencv-python
+torch
