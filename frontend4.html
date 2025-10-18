@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YOLO Model Performance Tester</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .config-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .config-section h2 {
+            color: #333;
+            margin-bottom: 25px;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1rem;
+        }
+
+        .form-group select,
+        .form-group input {
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .form-group select:focus,
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-hint {
+            font-size: 0.85rem;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        .btn-test {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-test:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-test:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 3px solid white;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-weight: 500;
+        }
+
+        .alert-error {
+            background: #fee;
+            color: #c33;
+            border-left: 4px solid #c33;
+        }
+
+        .alert-success {
+            background: #efe;
+            color: #3c3;
+            border-left: 4px solid #3c3;
+        }
+
+        .results-section {
+            display: none;
+        }
+
+        .results-section.show {
+            display: block;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .metric-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid;
+        }
+
+        .metric-card.blue { border-left-color: #667eea; }
+        .metric-card.green { border-left-color: #10b981; }
+        .metric-card.purple { border-left-color: #8b5cf6; }
+        .metric-card.pink { border-left-color: #ec4899; }
+
+        .metric-card h3 {
+            color: #666;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .metric-card .value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .additional-metrics {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .additional-metrics h3 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .additional-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .additional-card {
+            padding: 20px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #f0f4ff 0%, #e0e7ff 100%);
+        }
+
+        .additional-card.green {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+        }
+
+        .additional-card.purple {
+            background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);
+        }
+
+        .additional-card p {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .additional-card .value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .confusion-matrix {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            overflow-x: auto;
+        }
+
+        .confusion-matrix h3 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .matrix-container {
+            display: inline-block;
+            min-width: 100%;
+        }
+
+        .matrix-grid {
+            display: grid;
+            gap: 2px;
+        }
+
+        .matrix-cell {
+            padding: 15px;
+            text-align: center;
+            font-weight: 600;
+            border-radius: 4px;
+        }
+
+        .matrix-header {
+            background: #667eea;
+            color: white;
+            font-size: 0.85rem;
+        }
+
+        .matrix-cell.normal {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .per-class-metrics {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            overflow-x: auto;
+        }
+
+        .per-class-metrics h3 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #f9fafb;
+        }
+
+        th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 700;
+            color: #374151;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        tbody tr:hover {
+            background: #f9fafb;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .badge.blue {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .badge.green {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .badge.purple {
+            background: #f3e8ff;
+            color: #6b21a8;
+        }
+
+        .badge.gray {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .warning-message {
+            background: #fffbeb;
+            border: 1px solid #f59e0b;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: #92400e;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    nav {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 0;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+    }
+
+    .nav-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 20px;
+    }
+
+    .logo {
+        color: white;
+        font-size: 24px;
+        font-weight: bold;
+        padding: 15px 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .logo-icon {
+        width: 32px;
+        height: 32px;
+        background: white;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+    }
+
+    .nav-links {
+        display: flex;
+        list-style: none;
+        gap: 5px;
+    }
+
+    .nav-links li a {
+        color: white;
+        text-decoration: none;
+        padding: 15px 20px;
+        display: block;
+        transition: all 0.3s ease;
+        border-bottom: 3px solid transparent;
+        font-weight: 500;
+    }
+
+    .nav-links li a:hover {
+        background: rgba(255,255,255,0.1);
+        border-bottom-color: white;
+    }
+
+    .nav-links li a.active {
+        background: rgba(255,255,255,0.2);
+        border-bottom-color: white;
+    }
+
+    .hamburger {
+        display: none;
+        flex-direction: column;
+        cursor: pointer;
+        gap: 5px;
+        padding: 10px;
+    }
+
+    .hamburger span {
+        width: 25px;
+        height: 3px;
+        background: white;
+        border-radius: 3px;
+        transition: 0.3s;
+    }
+
+    @media (max-width: 768px) {
+        .hamburger {
+            display: flex;
+        }
+
+        .nav-links {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            flex-direction: column;
+            gap: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .nav-links.active {
+            max-height: 400px;
+        }
+
+        .nav-links li a {
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            border-left: 3px solid transparent;
+        }
+
+        .nav-links li a:hover,
+        .nav-links li a.active {
+            border-bottom-color: rgba(255,255,255,0.1);
+            border-left-color: white;
+        }
+
+        .logo {
+            font-size: 20px;
+        }
+    }
+</style>
+
+<nav>
+    <div class="nav-container">
+        <div class="logo">
+            <div class="logo-icon">🤖</div>
+            ML Analysis 
+        </div>
+        <div class="hamburger" onclick="toggleMenu()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <ul class="nav-links" id="navLinks">
+            <li><a href="navbar.html" id="nav-image">Home</a></li>
+            <li><a href="frontend.html" id="nav-image">Image Analysis</a></li>
+            <li><a href="frontend2.html" id="nav-folder">Folder Analysis</a></li>
+            <li><a href="frontend3.html" id="nav-mining">Data Mining</a></li>
+            <li><a href="frontend4.html" id="nav-evaluation">Model Evaluation</a></li>
+        </ul>
+    </div>
+</nav>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 20V10M12 20V4M6 20v-6"/>
+                </svg>
+                YOLO Model Performance Tester
+            </h1>
+            <p>Test your YOLO models performance with detailed metrics</p>
+        </div>
+
+        <!-- Configuration -->
+        <div class="config-section">
+            <h2>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+                </svg>
+                Test Configuration
+            </h2>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="modelType">Select a Model</label>
+                    <select id="modelType">
+                        <option value="">-- Choose a model --</option>
+                        <option value="brand">Brand Detection Model</option>
+                        <option value="plate">License Plate Detection Model</option>
+                        <option value="damage">Damage Detection Model</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="datasetPath">Dataset Path</label>
+                    <input 
+                        type="text" 
+                        id="datasetPath" 
+                        placeholder="/path/to/dataset"
+                    />
+                    <div class="form-hint">Structure: dataset/images/ and dataset/labels/</div>
+                </div>
+            </div>
+
+            <button class="btn-test" id="btnTest">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="5 3 19 12 5 21 5 3"/>
+                </svg>
+                Run Performance Test
+            </button>
+
+            <div id="alertContainer"></div>
+        </div>
+
+        <!-- Results -->
+        <div class="results-section" id="resultsSection">
+            <!-- Success Alert -->
+            <div class="alert alert-success" id="successAlert" style="display: none;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+                <div>
+                    <strong>Test Completed Successfully!</strong>
+                    <div id="successMessage"></div>
+                </div>
+            </div>
+
+            <!-- Warning for single class -->
+            <div class="warning-message" id="warningMessage" style="display: none;">
+                <strong>⚠️ Note:</strong> The dataset contains only one class. Metrics are calculated in binary mode.
+            </div>
+
+            <!-- Main Metrics -->
+            <div class="metrics-grid" id="metricsGrid"></div>
+
+            <!-- Additional Metrics -->
+            <div class="additional-metrics" id="additionalMetrics" style="display: none;">
+                <h3>Additional Metrics</h3>
+                <div class="additional-grid" id="additionalGrid"></div>
+            </div>
+
+            <!-- Confusion Matrix -->
+            <div class="confusion-matrix" id="confusionMatrix" style="display: none;">
+                <h3>Confusion Matrix</h3>
+                <div class="matrix-container" id="matrixContainer"></div>
+            </div>
+
+            <!-- Per-Class Metrics -->
+            <div class="per-class-metrics" id="perClassMetrics" style="display: none;">
+                <h3>Per-Class Metrics</h3>
+                <table id="perClassTable"></table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000';
+
+        const btnTest = document.getElementById('btnTest');
+        const modelType = document.getElementById('modelType');
+        const datasetPath = document.getElementById('datasetPath');
+        const alertContainer = document.getElementById('alertContainer');
+        const resultsSection = document.getElementById('resultsSection');
+        const warningMessage = document.getElementById('warningMessage');
+
+        btnTest.addEventListener('click', async () => {
+            const model = modelType.value;
+            const dataset = datasetPath.value.trim();
+
+            // Validation
+            if (!model || !dataset) {
+                showAlert('Please select a model and a dataset folder', 'error');
+                return;
+            }
+
+            // Disable button and show loading
+            btnTest.disabled = true;
+            btnTest.innerHTML = `
+                <div class="spinner"></div>
+                Testing in progress...
+            `;
+
+            try {
+                const response = await fetch(`${API_URL}/test-model-performance/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        model_type: model,
+                        dataset_path: dataset
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Error testing the model');
+                }
+
+                const data = await response.json();
+                displayResults(data);
+                hideAlert();
+
+            } catch (error) {
+                showAlert(error.message, 'error');
+            } finally {
+                // Reset button
+                btnTest.disabled = false;
+                btnTest.innerHTML = `
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="5 3 19 12 5 21 5 3"/>
+                    </svg>
+                    Run Performance Test
+                `;
+            }
+        });
+
+        function showAlert(message, type) {
+            alertContainer.innerHTML = `
+                <div class="alert alert-${type}">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                    <div>
+                        <strong>${type === 'error' ? 'Error' : 'Success'}</strong>
+                        <div>${message}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function hideAlert() {
+            alertContainer.innerHTML = '';
+        }
+
+        function displayResults(data) {
+            resultsSection.classList.add('show');
+
+            // Success message
+            const successAlert = document.getElementById('successAlert');
+            const successMessage = document.getElementById('successMessage');
+            successAlert.style.display = 'flex';
+            successMessage.textContent = `${data.total_images} images tested - Model: ${data.model_type}`;
+
+            // Show warning if single class
+            const isSingleClass = data.class_names.length === 1;
+            warningMessage.style.display = isSingleClass ? 'block' : 'none';
+
+            // Main metrics
+            const metricsGrid = document.getElementById('metricsGrid');
+            metricsGrid.innerHTML = `
+                <div class="metric-card blue">
+                    <h3>Accuracy</h3>
+                    <div class="value">${data.metrics.accuracy.toFixed(4)}</div>
+                </div>
+                <div class="metric-card green">
+                    <h3>Precision (Weighted)</h3>
+                    <div class="value">${data.metrics.precision_weighted.toFixed(4)}</div>
+                </div>
+                <div class="metric-card purple">
+                    <h3>Recall (Weighted)</h3>
+                    <div class="value">${data.metrics.recall_weighted.toFixed(4)}</div>
+                </div>
+                <div class="metric-card pink">
+                    <h3>F1 Score (Weighted)</h3>
+                    <div class="value">${data.metrics.f1_score_weighted.toFixed(4)}</div>
+                </div>
+            `;
+
+            // Additional metrics
+            const additionalMetrics = document.getElementById('additionalMetrics');
+            const additionalGrid = document.getElementById('additionalGrid');
+            additionalMetrics.style.display = 'block';
+            additionalGrid.innerHTML = `
+                <div class="additional-card">
+                    <p>Precision (Macro)</p>
+                    <div class="value">${data.metrics.precision_macro.toFixed(4)}</div>
+                </div>
+                <div class="additional-card green">
+                    <p>Recall (Macro)</p>
+                    <div class="value">${data.metrics.recall_macro.toFixed(4)}</div>
+                </div>
+                <div class="additional-card purple">
+                    <p>F1 Score (Macro)</p>
+                    <div class="value">${data.metrics.f1_score_macro.toFixed(4)}</div>
+                </div>
+                <div class="additional-card">
+                    <p>Inference Time</p>
+                    <div class="value">${data.metrics.inference_time.toFixed(2)}ms</div>
+                </div>
+            `;
+
+            // Confusion Matrix
+            if (data.confusion_matrix && data.confusion_matrix.length > 0) {
+                displayConfusionMatrix(data.confusion_matrix, data.class_names, isSingleClass);
+            }
+
+            // Per-class metrics
+            if (data.per_class_metrics) {
+                displayPerClassMetrics(data.per_class_metrics);
+            }
+
+            // Scroll to results
+            resultsSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function displayConfusionMatrix(matrix, classNames, isSingleClass = false) {
+            const confusionMatrix = document.getElementById('confusionMatrix');
+            const matrixContainer = document.getElementById('matrixContainer');
+            confusionMatrix.style.display = 'block';
+
+            // For single class, we might have a 2x2 matrix for binary classification
+            const displayClassNames = isSingleClass ? ['Negative', 'Positive'] : classNames;
+            const numClasses = displayClassNames.length;
+            
+            const matrixGrid = document.createElement('div');
+            matrixGrid.className = 'matrix-grid';
+            matrixGrid.style.gridTemplateColumns = `80px repeat(${numClasses}, 1fr)`;
+
+            // Empty cell
+            matrixGrid.innerHTML = '<div class="matrix-cell"></div>';
+
+            // Column headers
+            displayClassNames.forEach(name => {
+                const cell = document.createElement('div');
+                cell.className = 'matrix-cell matrix-header';
+                cell.textContent = name;
+                matrixGrid.appendChild(cell);
+            });
+
+            // Matrix rows
+            matrix.forEach((row, i) => {
+                // Row header
+                const rowHeader = document.createElement('div');
+                rowHeader.className = 'matrix-cell matrix-header';
+                rowHeader.textContent = displayClassNames[i];
+                matrixGrid.appendChild(rowHeader);
+
+                // Row cells
+                row.forEach((value, j) => {
+                    const cell = document.createElement('div');
+                    cell.className = 'matrix-cell normal';
+                    cell.textContent = value;
+                    
+                    // Highlight diagonal
+                    if (i === j) {
+                        const maxVal = Math.max(...row);
+                        const intensity = maxVal > 0 ? value / maxVal : 0;
+                        cell.style.background = `rgba(34, 197, 94, ${Math.min(intensity, 1)})`;
+                        cell.style.color = intensity > 0.5 ? 'white' : '#333';
+                    } else {
+                        const maxVal = Math.max(...matrix.flat());
+                        const intensity = maxVal > 0 ? value / maxVal : 0;
+                        cell.style.background = `rgba(229, 231, 235, ${Math.min(intensity, 1)})`;
+                    }
+                    
+                    matrixGrid.appendChild(cell);
+                });
+            });
+
+            matrixContainer.innerHTML = '';
+            matrixContainer.appendChild(matrixGrid);
+        }
+
+        function displayPerClassMetrics(metrics) {
+            const perClassMetrics = document.getElementById('perClassMetrics');
+            const perClassTable = document.getElementById('perClassTable');
+            perClassMetrics.style.display = 'block';
+
+            let tableHTML = `
+                <thead>
+                    <tr>
+                        <th>Class</th>
+                        <th style="text-align: center;">Precision</th>
+                        <th style="text-align: center;">Recall</th>
+                        <th style="text-align: center;">F1 Score</th>
+                        <th style="text-align: center;">Support</th>
+                    </tr>
+                </thead>
+                <tbody>
+            `;
+
+            Object.entries(metrics).forEach(([className, metric]) => {
+                tableHTML += `
+                    <tr>
+                        <td style="font-weight: 600;">${className}</td>
+                        <td style="text-align: center;">
+                            <span class="badge blue">${metric.precision.toFixed(3)}</span>
+                        </td>
+                        <td style="text-align: center;">
+                            <span class="badge green">${metric.recall.toFixed(3)}</span>
+                        </td>
+                        <td style="text-align: center;">
+                            <span class="badge purple">${metric.f1_score.toFixed(3)}</span>
+                        </td>
+                        <td style="text-align: center;">
+                            <span class="badge gray">${metric.support}</span>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tableHTML += '</tbody>';
+            perClassTable.innerHTML = tableHTML;
+        }
+    </script>
+</body>
+</html>

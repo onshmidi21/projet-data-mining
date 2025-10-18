@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Mining Dashboard - Car Analysis</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            animation: fadeInDown 0.8s ease;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .controls {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            animation: fadeIn 1s ease;
+        }
+
+        .btn-analyze {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.1em;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-analyze:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn-analyze:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: fadeInUp 0.8s ease;
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .icon {
+            font-size: 1.3em;
+        }
+
+        .cluster-item, .rule-item, .anomaly-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s ease;
+        }
+
+        .cluster-item:hover, .rule-item:hover, .anomaly-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+
+        .badge-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .badge-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .badge-warning {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .badge-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .stat-box h3 {
+            font-size: 2.5em;
+            margin-bottom: 5px;
+        }
+
+        .stat-box p {
+            font-size: 1em;
+            opacity: 0.9;
+        }
+
+        .risk-meter {
+            width: 100%;
+            height: 30px;
+            background: #e9ecef;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .risk-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745, #ffc107, #dc3545);
+            transition: width 1s ease;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 10px;
+            color: white;
+            font-weight: bold;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 20px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #dc3545;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+    </style>
+</head>
+<body>
+    <style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    nav {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 0;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+    }
+
+    .nav-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 20px;
+    }
+
+    .logo {
+        color: white;
+        font-size: 24px;
+        font-weight: bold;
+        padding: 15px 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .logo-icon {
+        width: 32px;
+        height: 32px;
+        background: white;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+    }
+
+    .nav-links {
+        display: flex;
+        list-style: none;
+        gap: 5px;
+    }
+
+    .nav-links li a {
+        color: white;
+        text-decoration: none;
+        padding: 15px 20px;
+        display: block;
+        transition: all 0.3s ease;
+        border-bottom: 3px solid transparent;
+        font-weight: 500;
+    }
+
+    .nav-links li a:hover {
+        background: rgba(255,255,255,0.1);
+        border-bottom-color: white;
+    }
+
+    .nav-links li a.active {
+        background: rgba(255,255,255,0.2);
+        border-bottom-color: white;
+    }
+
+    .hamburger {
+        display: none;
+        flex-direction: column;
+        cursor: pointer;
+        gap: 5px;
+        padding: 10px;
+    }
+
+    .hamburger span {
+        width: 25px;
+        height: 3px;
+        background: white;
+        border-radius: 3px;
+        transition: 0.3s;
+    }
+
+    @media (max-width: 768px) {
+        .hamburger {
+            display: flex;
+        }
+
+        .nav-links {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            flex-direction: column;
+            gap: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .nav-links.active {
+            max-height: 400px;
+        }
+
+        .nav-links li a {
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            border-left: 3px solid transparent;
+        }
+
+        .nav-links li a:hover,
+        .nav-links li a.active {
+            border-bottom-color: rgba(255,255,255,0.1);
+            border-left-color: white;
+        }
+
+        .logo {
+            font-size: 20px;
+        }
+    }
+</style>
+
+<nav>
+    <div class="nav-container">
+        <div class="logo">
+            <div class="logo-icon">🤖</div>
+            ML Analysis 
+        </div>
+        <div class="hamburger" onclick="toggleMenu()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <ul class="nav-links" id="navLinks">
+                                    <li><a href="navbar.html" id="nav-image">home</a></li>
+
+            <li><a href="frontend.html" id="nav-image">Image Analysis</a></li>
+            <li><a href="frontend2.html" id="nav-folder">Folder Analysis</a></li>
+            <li><a href="frontend3.html" id="nav-mining">Data Mining</a></li>
+            <li><a href="frontend4.html" id="nav-evaluation">Model Evaluation</a></li>
+        </ul>
+    </div>
+</nav>
+    <div class="container">
+        <div class="header">
+            <h1>🚗 Data Mining Dashboard</h1>
+            <p>Analyse intelligente des données automobiles</p>
+        </div>
+
+        <div class="controls">
+            <button class="btn-analyze" onclick="runDataMining()">
+                🔍 Lancer l'analyse Data Mining
+            </button>
+            <div class="loading">
+                <div class="spinner"></div>
+                <p style="margin-top: 15px; color: #667eea;">Analyse en cours...</p>
+            </div>
+            <div class="error-message" id="errorMessage"></div>
+        </div>
+
+        <div id="results" style="display: none;">
+            <!-- Clustering Section -->
+            <div class="grid">
+                <div class="card full-width">
+                    <h2><span class="icon">🎯</span> Clustering - Groupes de Similarité</h2>
+                    <div id="clusteringResults"></div>
+                    <div class="chart-container">
+                        <canvas id="clusterChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Predictions Section -->
+            <div class="grid">
+                <div class="card">
+                    <h2><span class="icon">📊</span> Prédictions - Risque de Dommages</h2>
+                    <div id="predictionsResults"></div>
+                </div>
+
+                <div class="card">
+                    <h2><span class="icon">📈</span> Importance des Features</h2>
+                    <div class="chart-container">
+                        <canvas id="featureChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Association Rules Section -->
+            <div class="grid">
+                <div class="card full-width">
+                    <h2><span class="icon">🔗</span> Règles d'Association</h2>
+                    <div id="associationsResults"></div>
+                </div>
+            </div>
+
+            <!-- Anomalies Section -->
+            <div class="grid">
+                <div class="card full-width">
+                    <h2><span class="icon">⚠️</span> Détection d'Anomalies</h2>
+                    <div id="anomaliesResults"></div>
+                </div>
+            </div>
+
+            <!-- High Risk Cars -->
+            <div class="grid">
+                <div class="card full-width">
+                    <h2><span class="icon">🚨</span> Véhicules à Haut Risque</h2>
+                    <div id="highRiskCars"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000';
+        let clusterChart = null;
+        let featureChart = null;
+
+        async function runDataMining() {
+            const btn = document.querySelector('.btn-analyze');
+            const loading = document.querySelector('.loading');
+            const results = document.getElementById('results');
+            const errorMsg = document.getElementById('errorMessage');
+
+            btn.disabled = true;
+            loading.style.display = 'block';
+            results.style.display = 'none';
+            errorMsg.style.display = 'none';
+
+            try {
+                const response = await fetch(`${API_URL}/data-mining/`, {
+                    method: 'POST'
+                });
+
+                if (!response.ok) {
+                    throw new Error('Erreur lors de l\'analyse');
+                }
+
+                const data = await response.json();
+                displayResults(data);
+                results.style.display = 'block';
+
+            } catch (error) {
+                errorMsg.textContent = `❌ ${error.message}. Assurez-vous que l'API est lancée et que des données sont disponibles.`;
+                errorMsg.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                loading.style.display = 'none';
+            }
+        }
+
+        function displayResults(data) {
+            displayClustering(data.clustering);
+            displayPredictions(data.predictions);
+            displayAssociations(data.associations);
+            displayAnomalies(data.anomalies);
+        }
+
+        function displayClustering(clustering) {
+            const container = document.getElementById('clusteringResults');
+            
+            if (clustering.error) {
+                container.innerHTML = `<p style="color: #dc3545;">${clustering.error}</p>`;
+                return;
+            }
+
+            let html = `<div class="stat-box">
+                <h3>${clustering.num_clusters}</h3>
+                <p>Groupes Identifiés</p>
+            </div>`;
+
+            html += `<p style="margin-bottom: 15px; color: #6c757d;">${clustering.interpretation}</p>`;
+
+            Object.entries(clustering.summary).forEach(([cluster, stats]) => {
+                html += `<div class="cluster-item">
+                    <h4 style="color: #667eea; margin-bottom: 10px;">📍 Cluster ${cluster}</h4>
+                    <span class="badge badge-primary">Voitures: ${stats.brand}</span>
+                    <span class="badge badge-warning">Âge moyen: ${stats.age_numeric} ans</span>
+                    <span class="badge badge-danger">Dommages: ${stats.damage_type}</span>
+                </div>`;
+            });
+
+            container.innerHTML = html;
+
+            // Chart
+            const ctx = document.getElementById('clusterChart').getContext('2d');
+            if (clusterChart) clusterChart.destroy();
+
+            const labels = Object.keys(clustering.summary).map(c => `Cluster ${c}`);
+            const carCounts = Object.values(clustering.summary).map(s => s.brand);
+            const avgAges = Object.values(clustering.summary).map(s => s.age_numeric);
+
+            clusterChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Nombre de voitures',
+                        data: carCounts,
+                        backgroundColor: 'rgba(102, 126, 234, 0.7)',
+                        borderColor: 'rgba(102, 126, 234, 1)',
+                        borderWidth: 2
+                    }, {
+                        label: 'Âge moyen',
+                        data: avgAges,
+                        backgroundColor: 'rgba(118, 75, 162, 0.7)',
+                        borderColor: 'rgba(118, 75, 162, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    }
+                }
+            });
+        }
+
+        function displayPredictions(predictions) {
+            const container = document.getElementById('predictionsResults');
+            
+            if (predictions.error) {
+                container.innerHTML = `<p style="color: #dc3545;">${predictions.error}</p>`;
+                return;
+            }
+
+            const riskPercent = (predictions.avg_risk * 100).toFixed(1);
+            let html = '';
+
+            if (!predictions.warning) {
+                html += `<div class="stat-box">
+                    <h3>${(predictions.accuracy * 100).toFixed(1)}%</h3>
+                    <p>Précision du Modèle</p>
+                </div>`;
+            }
+
+            html += `<h3 style="margin: 20px 0 10px 0;">Risque Moyen de Dommages</h3>
+                <div class="risk-meter">
+                    <div class="risk-fill" style="width: ${riskPercent}%">${riskPercent}%</div>
+                </div>`;
+
+            if (predictions.warning) {
+                html += `<p style="color: #ffc107; margin-top: 15px;">⚠️ ${predictions.warning}</p>`;
+            }
+
+            container.innerHTML = html;
+
+            // Feature Importance Chart
+            if (predictions.feature_importance && Object.keys(predictions.feature_importance).length > 0) {
+                const ctx = document.getElementById('featureChart').getContext('2d');
+                if (featureChart) featureChart.destroy();
+
+                const features = Object.keys(predictions.feature_importance);
+                const importance = Object.values(predictions.feature_importance);
+
+                featureChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: features,
+                        datasets: [{
+                            data: importance,
+                            backgroundColor: [
+                                'rgba(102, 126, 234, 0.8)',
+                                'rgba(118, 75, 162, 0.8)',
+                                'rgba(255, 193, 7, 0.8)'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            }
+
+            // High Risk Cars
+            if (predictions.high_risk_cars && predictions.high_risk_cars.length > 0) {
+                let riskHtml = '<h3 style="margin-top: 20px;">Véhicules à Risque Élevé</h3>';
+                predictions.high_risk_cars.forEach(car => {
+                    const risk = (car.risk_score * 100).toFixed(1);
+                    riskHtml += `<div class="cluster-item">
+                        <span class="badge badge-danger">Risque: ${risk}%</span>
+                        <span class="badge badge-primary">${car.image}</span>
+                    </div>`;
+                });
+                document.getElementById('highRiskCars').innerHTML = riskHtml;
+            }
+        }
+
+        function displayAssociations(associations) {
+            const container = document.getElementById('associationsResults');
+            
+            if (associations.length === 0 || associations[0].warning) {
+                container.innerHTML = `<p style="color: #ffc107;">⚠️ ${associations[0]?.warning || 'Aucune règle trouvée'}</p>`;
+                return;
+            }
+
+            let html = '<div style="display: grid; gap: 15px;">';
+            associations.forEach((rule, index) => {
+                const confidence = (rule.confidence * 100).toFixed(0);
+                html += `<div class="rule-item">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                        <span style="font-size: 1.5em;">📋</span>
+                        <strong>Règle ${index + 1}</strong>
+                    </div>
+                    <p style="margin-bottom: 10px;">${rule.interpretation}</p>
+                    <span class="badge badge-success">Confiance: ${confidence}%</span>
+                    <span class="badge badge-primary">Support: ${rule.support.toFixed(3)}</span>
+                    <span class="badge badge-warning">Lift: ${rule.lift.toFixed(2)}</span>
+                </div>`;
+            });
+            html += '</div>';
+
+            container.innerHTML = html;
+        }
+
+        function displayAnomalies(anomalies) {
+            const container = document.getElementById('anomaliesResults');
+            
+            if (anomalies.length === 0 || anomalies[0].warning || anomalies[0].message) {
+                container.innerHTML = `<p style="color: #28a745;">✅ ${anomalies[0]?.message || anomalies[0]?.warning || 'Aucune anomalie'}</p>`;
+                return;
+            }
+
+            let html = '';
+            anomalies.forEach((anomaly, index) => {
+                html += `<div class="anomaly-item">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                        <span style="font-size: 1.5em;">🔍</span>
+                        <strong>Anomalie ${index + 1}</strong>
+                    </div>
+                    <p style="margin-bottom: 10px;"><strong>Image:</strong> ${anomaly.image}</p>
+                    <p style="margin-bottom: 10px;"><strong>Raison:</strong> ${anomaly.reason}</p>
+                    <span class="badge badge-danger">Score: ${anomaly.anomaly_score.toFixed(3)}</span>
+                </div>`;
+            });
+
+            container.innerHTML = html;
+        }
+    </script>
+</body>
+</html>

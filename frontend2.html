@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Analysis - Upload Folder</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .upload-section {
+            background: #f8f9fa;
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            transition: all 0.3s;
+        }
+
+        .upload-section:hover {
+            border-color: #764ba2;
+            background: #f0f0ff;
+        }
+
+        .folder-path-section {
+            margin-top: 20px;
+        }
+
+        .folder-path-section input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #667eea;
+            border-radius: 5px;
+            font-size: 1em;
+            margin-bottom: 20px;
+        }
+
+        .upload-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: transform 0.2s;
+            font-weight: bold;
+        }
+
+        .upload-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .upload-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .progress-section {
+            margin: 20px 0;
+            display: none;
+        }
+
+        .progress-bar-container {
+            background: #e0e0e0;
+            border-radius: 10px;
+            height: 30px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .results-section {
+            display: none;
+            margin-top: 30px;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #667eea;
+            color: white;
+            border-radius: 10px;
+        }
+
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .summary-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .summary-card h3 {
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+
+        .summary-card p {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .results-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+        }
+
+        .results-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .results-table tr:hover {
+            background: #f5f5f5;
+        }
+
+        .results-table tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+
+        .image-name {
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+            margin: 2px;
+        }
+
+        .badge-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .badge-warning {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .badge-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .badge-info {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .success-message {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .damage-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+    </style>
+</head>
+<body>
+    <style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    nav {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 0;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+    }
+
+    .nav-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 20px;
+    }
+
+    .logo {
+        color: white;
+        font-size: 24px;
+        font-weight: bold;
+        padding: 15px 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .logo-icon {
+        width: 32px;
+        height: 32px;
+        background: white;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+    }
+
+    .nav-links {
+        display: flex;
+        list-style: none;
+        gap: 5px;
+    }
+
+    .nav-links li a {
+        color: white;
+        text-decoration: none;
+        padding: 15px 20px;
+        display: block;
+        transition: all 0.3s ease;
+        border-bottom: 3px solid transparent;
+        font-weight: 500;
+    }
+
+    .nav-links li a:hover {
+        background: rgba(255,255,255,0.1);
+        border-bottom-color: white;
+    }
+
+    .nav-links li a.active {
+        background: rgba(255,255,255,0.2);
+        border-bottom-color: white;
+    }
+
+    .hamburger {
+        display: none;
+        flex-direction: column;
+        cursor: pointer;
+        gap: 5px;
+        padding: 10px;
+    }
+
+    .hamburger span {
+        width: 25px;
+        height: 3px;
+        background: white;
+        border-radius: 3px;
+        transition: 0.3s;
+    }
+
+    @media (max-width: 768px) {
+        .hamburger {
+            display: flex;
+        }
+
+        .nav-links {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            flex-direction: column;
+            gap: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .nav-links.active {
+            max-height: 400px;
+        }
+
+        .nav-links li a {
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            border-left: 3px solid transparent;
+        }
+
+        .nav-links li a:hover,
+        .nav-links li a.active {
+            border-bottom-color: rgba(255,255,255,0.1);
+            border-left-color: white;
+        }
+
+        .logo {
+            font-size: 20px;
+        }
+    }
+</style>
+
+<nav>
+    <div class="nav-container">
+        <div class="logo">
+            <div class="logo-icon">🤖</div>
+            ML Analysis 
+        </div>
+        <div class="hamburger" onclick="toggleMenu()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <ul class="nav-links" id="navLinks">
+                                    <li><a href="navbar.html" id="nav-image">home</a></li>
+
+            <li><a href="frontend.html" id="nav-image">Image Analysis</a></li>
+            <li><a href="frontend2.html" id="nav-folder">Folder Analysis</a></li>
+            <li><a href="frontend3.html" id="nav-mining">Data Mining</a></li>
+            <li><a href="frontend4.html" id="nav-evaluation">Model Evaluation</a></li>
+        </ul>
+    </div>
+</nav>
+    <div class="container">
+        <h1>🚗 Car Analysis System</h1>
+        <p class="subtitle">Analyze a folder of car images for brand, license plate, and damage detection</p>
+
+        <div class="upload-section">
+            <div class="folder-path-section">
+                <label for="folderPath" style="display: block; margin-bottom: 10px; font-weight: bold; color: #555;">
+                    📂 Chemin du dossier d'images sur le serveur :
+                </label>
+                <input type="text" id="folderPath" placeholder="Ex: /path/to/images/folder">
+            </div>
+            <button class="upload-btn" onclick="startAnalysis()">
+                🚀 Analyze Folder
+            </button>
+        </div>
+
+        <div class="progress-section" id="progressSection">
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progressBar">
+                    <span id="progressText">Processing...</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="error-message" id="errorMessage"></div>
+        <div class="success-message" id="successMessage"></div>
+
+        <div class="results-section" id="resultsSection">
+            <div class="results-header">
+                <h2>📊 Analysis Results</h2>
+                <button class="upload-btn" onclick="location.reload()">New Analysis</button>
+            </div>
+
+            <div class="summary-cards" id="summaryCards"></div>
+
+            <table class="results-table" id="resultsTable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Image</th>
+                        <th>Brand</th>
+                        <th>License Plate</th>
+                        <th>Country</th>
+                        <th>Age</th>
+                        <th>Damage</th>
+                    </tr>
+                </thead>
+                <tbody id="resultsBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = "http://localhost:8000";
+
+        async function startAnalysis() {
+            const folderPath = document.getElementById('folderPath').value.trim();
+
+            if (!folderPath) {
+                showError('Veuillez entrer le chemin du dossier d\'images');
+                return;
+            }
+
+            hideMessages();
+            showProgress();
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/analyze-folder/?folder_path=${encodeURIComponent(folderPath)}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                hideProgress();
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                await displayResults(data);
+
+            } catch (error) {
+                hideProgress();
+                showError(`Erreur: ${error.message}`);
+                console.error('Error:', error);
+            }
+        }
+
+        async function displayResults(data) {
+            document.getElementById('resultsSection').style.display = 'block';
+            displaySummary(data.summary);
+
+            // Récupérer les résultats détaillés
+            try {
+                const resultsResponse = await fetch(`${API_BASE_URL}/results/`);
+                const resultsData = await resultsResponse.json();
+                
+                if (resultsData.results && resultsData.results.length > 0) {
+                    displayTable(resultsData.results);
+                }
+            } catch (error) {
+                console.error('Erreur lors de la récupération des résultats:', error);
+            }
+
+            // Lien pour télécharger le CSV
+            const csvUrl = `${API_BASE_URL}/download-results/`;
+            showSuccess(`Analyse terminée! ${data.rows} images traitées. <a href="${csvUrl}" download style="color: #1976d2; text-decoration: underline; font-weight: bold;">📥 Télécharger le CSV</a>`);
+        }
+
+        function displayTable(results) {
+            const tbody = document.getElementById('resultsBody');
+            tbody.innerHTML = '';
+
+            results.forEach((result, index) => {
+                const row = document.createElement('tr');
+                
+                // Formater les dommages
+                let damageHtml = '';
+                if (Array.isArray(result.damage)) {
+                    damageHtml = result.damage.map(d => 
+                        `<span class="badge ${d === 'No damage' ? 'badge-success' : 'badge-danger'}">${d}</span>`
+                    ).join(' ');
+                } else {
+                    damageHtml = `<span class="badge badge-success">No damage</span>`;
+                }
+
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td class="image-name">${result.image}</td>
+                    <td><span class="badge badge-info">${result.brand}</span></td>
+                    <td><span class="badge badge-warning">${result.plate}</span></td>
+                    <td>${result.country}</td>
+                    <td>${result.age}</td>
+                    <td><div class="damage-list">${damageHtml}</div></td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+
+        function displaySummary(summary) {
+            const summaryCards = document.getElementById('summaryCards');
+            summaryCards.innerHTML = `
+                <div class="summary-card">
+                    <h3>${summary.total_images}</h3>
+                    <p>Total Images</p>
+                </div>
+                <div class="summary-card">
+                    <h3>${summary.brands_detected}</h3>
+                    <p>Brands Detected</p>
+                </div>
+                <div class="summary-card">
+                    <h3>${summary.plates_detected}</h3>
+                    <p>Plates Detected</p>
+                </div>
+                <div class="summary-card">
+                    <h3>${summary.damage_detected}</h3>
+                    <p>Damage Detected</p>
+                </div>
+            `;
+        }
+
+        function showProgress() {
+            document.getElementById('progressSection').style.display = 'block';
+            document.getElementById('progressBar').style.width = '100%';
+        }
+
+        function hideProgress() {
+            document.getElementById('progressSection').style.display = 'none';
+            document.getElementById('progressBar').style.width = '0%';
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.innerHTML = message;
+            errorDiv.style.display = 'block';
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.innerHTML = message;
+            successDiv.style.display = 'block';
+        }
+
+        function hideMessages() {
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('successMessage').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

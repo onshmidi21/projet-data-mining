@@ -13,8 +13,10 @@ class WorldwidePlateOCR:
         print("🔄 Initialisation EasyOCR mondial...")
         try:
             # Charger uniquement l'anglais pour couvrir l'alphabet latin
-            self.reader = easyocr.Reader(['en'], gpu=False)
-            print("✅ EasyOCR initialisé (Latin)")
+            # Utiliser GPU si disponible
+            gpu_available = torch.cuda.is_available() if 'torch' in globals() else False
+            self.reader = easyocr.Reader(['en'], gpu=gpu_available)
+            print(f"✅ EasyOCR initialisé (Latin, GPU: {gpu_available})")
         except Exception as e:
             print(f"❌ Erreur initialisation EasyOCR: {e}")
             raise

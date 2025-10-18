@@ -1,23 +1,101 @@
 image,brand,plate,country,age,damage
-N111_jpeg.rf.3fccc88685a55538f1ed802e1e52b95f.jpg,skoda,Unknown,Inconnu,Indéterminé,['dent']
-N11_jpeg.rf.df44954aabd6891aea27d878cfb0460b.jpg,Mercedes,Unknown,Inconnu,Indéterminé,['No damage']
-N129_jpeg.rf.95826909354651ffd24a24b20783116d.jpg,Unknown,DL7CN5617,International,Indéterminé,['shattered_glass']
-N191_jpeg.rf.244ea46336f1476485fd1f8afdde2363.jpg,Unknown,9239,États-Unis,Classique,['No damage']
-N206_jpeg.rf.a6b46aaab3cd2617158d9f57e23d98fb.jpg,SUZUKI,HR26CR3302,International,Indéterminé,['No damage']
-N212_jpeg.rf.4a76ea32961bb1f37bbb49f9dd40ff4d.jpg,SUZUKI,221412223,International,Indéterminé,['No damage']
-N231_jpeg.rf.3ec0fa36349bb9975b017e4b74f6fb0e.jpg,Unknown,MHISTC554,International,Indéterminé,['No damage']
-N233_jpeg.rf.e71e6f2da0adb4a3e6b046ae7419632f.jpg,Unknown,TN99F2378,International,Indéterminé,['No damage']
-N242_jpeg.rf.c895303345ac528a10883511d31e4ad3.jpg,skoda,MH20DV2362,International,Indéterminé,['No damage']
-N244_jpeg.rf.f669cc8d0aa0d12c90b7efae96e4ac94.jpg,Unknown,KLOSAK33OQ,International,Indéterminé,['No damage']
-N27_jpeg.rf.0ac3260be48b91fffdca4d536e3b7b61.jpg,Unknown,I7TXT4,États-Unis,Moderne (depuis 1990),['No damage']
-N30_jpeg.rf.2020aefc67a4ddbf7e7c356289c61e54.jpg,skoda,RK36IS,Pays-Bas,Contemporain,"['shattered_glass', 'dent']"
-N38_jpeg.rf.8083183254d4f4748caf1a5be01845ba.jpg,Unknown,V494RT,États-Unis,Moderne (depuis 1990),['No damage']
-N40_jpeg.rf.6329a924c488059e0590d276c4f53733.jpg,bmw,DLGCAB123X,International,Indéterminé,['No damage']
-N43_jpeg.rf.b780c1677e9aee41269a106bb9c7816f.jpg,honda,33BO,États-Unis,Ancien,['No damage']
-N48_jpeg.rf.c8e023edcd5a3dc0e627f2c3a6e01e80.jpg,SUZUKI,HRZGDK6L75,International,Indéterminé,['scratch']
-N52_jpeg.rf.4132d57cb701b0b46dda55948a7eabc4.jpg,Toyota,HR696969,Suisse,Contemporain,['No damage']
-N54_jpeg.rf.6ac1b575ccacbf7c6f07011a0b0c5ab0.jpg,Unknown,N014A6274,International,Indéterminé,['No damage']
-N59_jpeg.rf.961c4727c204ac53d7465322cbe3e4b1.jpg,Unknown,MH20EE7597,International,Indéterminé,['No damage']
-N77_jpeg.rf.23e07f2fbf8db3cb7208cc9d0bf27d7c.jpg,Unknown,7SOI,États-Unis,Ancien,['No damage']
-N81_jpeg.rf.a9d8db7af9e9bcf9ad2faf1ca6c45dc7.jpg,chevrolet,GJ17TC214,International,Indéterminé,['shattered_glass']
-N82_jpeg.rf.9f3586e16136d8a416fa2cfb5d56790f.jpg,volkswagen,MH14ICF460,International,Indéterminé,['No damage']
+car_001.jpg,renault,AA123BB,France,"Moderne (depuis 2009)",['No damage']
+car_002.jpg,peugeot,1234ABC75,France,"Ancien (avant 2009)","['scratch', 'dent']"
+car_003.jpg,volkswagen,B1234CD,Allemagne,"Moderne (depuis 1990)",['broken_lamp']
+car_004.jpg,toyota,TOY345,Japon,Contemporain,['No damage']
+car_005.jpg,mercedes,MB567DE,Allemagne,"Moderne (depuis 1990)","['scratch', 'broken_lamp']"
+car_006.jpg,bmw,M890AB,Allemagne,"Moderne (depuis 1990)",['No damage']
+car_007.jpg,renault,BB789CC,France,"Moderne (depuis 2009)","['dent', 'scratch']"
+car_008.jpg,kia,123K4567,Corée du Sud,Standard,['shattered_glass']
+car_009.jpg,hyundai,456H8901,Corée du Sud,Classique,"['scratch', 'dent', 'broken_lamp']"
+car_010.jpg,ford,ABC1234,États-Unis,Ancien,"['scratch', 'rust']"
+car_011.jpg,peugeot,5678DEF69,France,"Ancien (avant 2009)","['dent', 'rust', 'broken_lamp']"
+car_012.jpg,toyota,JPN234,Japon,"Récent",['No damage']
+car_013.jpg,volkswagen,WOB123,Allemagne,"Moderne (depuis 1990)",['scratch']
+car_014.jpg,renault,CC234DD,France,"Moderne (depuis 2009)",['broken_lamp']
+car_015.jpg,mercedes,S5678MB,Allemagne,"Moderne (depuis 1990)",['No damage']
+car_016.jpg,bmw,B9012MN,Allemagne,Classique,"['dent', 'scratch']"
+car_017.jpg,kia,567KIA89,Corée du Sud,Standard,['shattered_glass']
+car_018.jpg,hyundai,890HYU12,Corée du Sud,Ancien,"['scratch', 'dent']"
+car_019.jpg,ford,FOR123,États-Unis,"Très ancien","['rust', 'broken_lamp', 'dent']"
+car_020.jpg,chevrolet,CHE456,États-Unis,Ancien,"['scratch', 'rust']"
+car_021.jpg,renault,DD567EE,France,"Moderne (depuis 2009)","['dent', 'scratch']"
+car_022.jpg,peugeot,9012GHI33,France,"Ancien (avant 2009)",['broken_lamp']
+car_023.jpg,toyota,TOY789,Japon,Récent,['No damage']
+car_024.jpg,honda,HON345,Japon,Standard,['scratch']
+car_025.jpg,nissan,NIS678,Japon,Classique,"['dent', 'rust']"
+car_026.jpg,volkswagen,HH123KK,Allemagne,"Moderne (depuis 1990)",['No damage']
+car_027.jpg,audi,IN234AUD,Allemagne,"Moderne (depuis 1990)","['scratch', 'broken_lamp']"
+car_028.jpg,mercedes,MB8901,Allemagne,Classique,['dent']
+car_029.jpg,bmw,M123BMW,Allemagne,"Moderne (depuis 1990)",['No damage']
+car_030.jpg,kia,789KIA01,Corée du Sud,Standard,['shattered_glass']
+car_031.jpg,hyundai,012HYU34,Corée du Sud,Standard,['scratch']
+car_032.jpg,renault,EE890FF,France,"Moderne (depuis 2009)",['No damage']
+car_033.jpg,peugeot,3456JKL44,France,"Ancien (avant 2009)","['rust', 'dent', 'scratch']"
+car_034.jpg,ford,FOR789,États-Unis,Ancien,"['broken_lamp', 'rust']"
+car_035.jpg,chevrolet,CHE890,États-Unis,Classique,"['dent', 'scratch']"
+car_036.jpg,toyota,TOY567JP,Japon,Récent,['No damage']
+car_037.jpg,honda,HON890,Japon,Standard,"['scratch', 'dent']"
+car_038.jpg,nissan,NIS234JP,Japon,Classique,"['rust', 'dent']"
+car_039.jpg,volkswagen,B3456WOB,Allemagne,"Moderne (depuis 1990)",['broken_lamp']
+car_040.jpg,audi,AUD789,Allemagne,"Moderne (depuis 1990)",['No damage']
+car_041.jpg,mercedes,MB7890S,Allemagne,"Moderne (depuis 1990)",['scratch']
+car_042.jpg,bmw,M3456B,Allemagne,Ancien,"['dent', 'rust']"
+car_043.jpg,kia,901KIA23,Corée du Sud,Standard,['shattered_glass']
+car_044.jpg,hyundai,234HYU56,Corée du Sud,Classique,"['scratch', 'broken_lamp']"
+car_045.jpg,renault,FF012GG,France,"Moderne (depuis 2009)",['dent']
+car_046.jpg,peugeot,7890MNO88,France,"Ancien (avant 2009)","['rust', 'scratch']"
+car_047.jpg,ford,FOR012US,États-Unis,"Très ancien","['broken_lamp', 'rust', 'dent']"
+car_048.jpg,chevrolet,CHE234US,États-Unis,Ancien,"['scratch', 'rust']"
+car_049.jpg,toyota,TOY789J,Japon,Récent,['No damage']
+car_050.jpg,honda,HON012JP,Japon,Standard,['scratch']
+car_051.jpg,nissan,NIS456,Japon,Classique,"['dent', 'rust']"
+car_052.jpg,volkswagen,WOB4567,Allemagne,"Moderne (depuis 1990)","['broken_lamp', 'scratch']"
+car_053.jpg,audi,AUD901IN,Allemagne,"Moderne (depuis 1990)",['No damage']
+car_054.jpg,mercedes,S8901MB,Allemagne,Classique,"['dent', 'scratch']"
+car_055.jpg,bmw,M4567BMW,Allemagne,"Moderne (depuis 1990)",['No damage']
+car_056.jpg,kia,123KIA45,Corée du Sud,Standard,['shattered_glass']
+car_057.jpg,hyundai,456HYU78,Corée du Sud,Standard,"['scratch', 'dent']"
+car_058.jpg,renault,GG123HH,France,"Moderne (depuis 2009)",['No damage']
+car_059.jpg,peugeot,1234PQR59,France,"Ancien (avant 2009)","['rust', 'dent', 'broken_lamp']"
+car_060.jpg,ford,FOR345,États-Unis,"Très ancien","['rust', 'broken_lamp']"
+car_061.jpg,chevrolet,CHE567,États-Unis,Classique,"['dent', 'scratch']"
+car_062.jpg,toyota,TOY901,Japon,Récent,['No damage']
+car_063.jpg,honda,HON234J,Japon,Standard,['scratch']
+car_064.jpg,nissan,NIS678JP,Japon,Ancien,"['rust', 'dent']"
+car_065.jpg,volkswagen,B5678WOB,Allemagne,"Moderne (depuis 1990)",['broken_lamp']
+car_066.jpg,audi,AUD012,Allemagne,"Moderne (depuis 1990)",['No damage']
+car_067.jpg,mercedes,MB9012,Allemagne,Classique,"['scratch', 'dent']"
+car_068.jpg,bmw,M5678B,Allemagne,"Moderne (depuis 1990)",['No damage']
+car_069.jpg,kia,345KIA67,Corée du Sud,Classique,['shattered_glass']
+car_070.jpg,hyundai,678HYU90,Corée du Sud,Standard,"['scratch', 'broken_lamp']"
+car_071.jpg,renault,HH456II,France,"Moderne (depuis 2009)","['dent', 'scratch']"
+car_072.jpg,peugeot,5678STU22,France,"Ancien (avant 2009)","['rust', 'broken_lamp', 'dent']"
+car_073.jpg,ford,FOR678,États-Unis,"Très ancien","['rust', 'scratch']"
+car_074.jpg,chevrolet,CHE789,États-Unis,Ancien,['dent']
+car_075.jpg,toyota,TOY123,Japon,Récent,['No damage']
+car_076.jpg,honda,HON456,Japon,Classique,"['scratch', 'dent']"
+car_077.jpg,nissan,NIS890,Japon,Classique,"['rust', 'dent']"
+car_078.jpg,volkswagen,WOB6789,Allemagne,"Moderne (depuis 1990)",['No damage']
+car_079.jpg,audi,AUD234,Allemagne,"Moderne (depuis 1990)","['broken_lamp', 'scratch']"
+car_080.jpg,mercedes,MB0123,Allemagne,Ancien,['dent']
+car_081.jpg,bmw,M6789B,Allemagne,Ancien,"['rust', 'dent']"
+car_082.jpg,kia,567KIA89,Corée du Sud,Standard,['shattered_glass']
+car_083.jpg,hyundai,890HYU01,Corée du Sud,Classique,"['scratch', 'dent', 'broken_lamp']"
+car_084.jpg,renault,II789JJ,France,"Moderne (depuis 2009)",['No damage']
+car_085.jpg,peugeot,9012VWX11,France,"Ancien (avant 2009)","['rust', 'scratch']"
+car_086.jpg,ford,FOR901,États-Unis,Ancien,"['broken_lamp', 'rust']"
+car_087.jpg,chevrolet,CHE901,États-Unis,Ancien,"['dent', 'scratch', 'rust']"
+car_088.jpg,toyota,TOY345,Japon,Récent,['No damage']
+car_089.jpg,honda,HON678,Japon,Standard,['scratch']
+car_090.jpg,nissan,NIS012,Japon,Classique,"['rust', 'dent']"
+car_091.jpg,volkswagen,B7890WOB,Allemagne,Classique,"['broken_lamp', 'dent']"
+car_092.jpg,audi,AUD456,Allemagne,"Moderne (depuis 1990)",['No damage']
+car_093.jpg,mercedes,S1234MB,Allemagne,Classique,"['scratch', 'dent']"
+car_094.jpg,bmw,M7890BMW,Allemagne,"Moderne (depuis 1990)",['No damage']
+car_095.jpg,kia,789KIA01,Corée du Sud,Standard,['shattered_glass']
+car_096.jpg,hyundai,012HYU23,Corée du Sud,Standard,"['scratch', 'broken_lamp']"
+car_097.jpg,renault,JJ012KK,France,"Moderne (depuis 2009)",['dent']
+car_098.jpg,peugeot,3456YZA77,France,"Ancien (avant 2009)","['rust', 'broken_lamp', 'dent', 'scratch']"
+car_099.jpg,ford,FOR123,États-Unis,"Très ancien","['rust', 'broken_lamp']"
+car_100.jpg,chevrolet,CHE123,États-Unis,Ancien,"['dent', 'rust']"

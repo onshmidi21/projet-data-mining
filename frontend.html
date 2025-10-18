@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Detection - Bounding Boxes Viewer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .upload-section {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border: 2px dashed #667eea;
+        }
+
+        .upload-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 50px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            display: inline-block;
+            margin: 10px;
+        }
+
+        .upload-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .upload-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-size: 18px;
+            color: #667eea;
+            display: none;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .results {
+            display: none;
+        }
+
+        .info-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .info-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            font-size: 18px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .detection-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .detection-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        .detection-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .detection-header {
+            color: white;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .header-brand {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+
+        .header-plate {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        }
+
+        .header-damage {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .detection-image {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .detection-info {
+            padding: 15px;
+        }
+
+        .boxes-list {
+            margin-top: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .box-item {
+            background: #f8f9fa;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .confidence {
+            display: inline-block;
+            padding: 3px 10px;
+            color: white;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+
+        .confidence-red { background: #ef4444; }
+        .confidence-blue { background: #3b82f6; }
+        .confidence-green { background: #10b981; }
+
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            display: none;
+            border-left: 4px solid #dc2626;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .cropped-plate-info {
+            background: #eff6ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .cropped-plate-info p {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    nav {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 0;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+    }
+
+    .nav-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 20px;
+    }
+
+    .logo {
+        color: white;
+        font-size: 24px;
+        font-weight: bold;
+        padding: 15px 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .logo-icon {
+        width: 32px;
+        height: 32px;
+        background: white;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+    }
+
+    .nav-links {
+        display: flex;
+        list-style: none;
+        gap: 5px;
+    }
+
+    .nav-links li a {
+        color: white;
+        text-decoration: none;
+        padding: 15px 20px;
+        display: block;
+        transition: all 0.3s ease;
+        border-bottom: 3px solid transparent;
+        font-weight: 500;
+    }
+
+    .nav-links li a:hover {
+        background: rgba(255,255,255,0.1);
+        border-bottom-color: white;
+    }
+
+    .nav-links li a.active {
+        background: rgba(255,255,255,0.2);
+        border-bottom-color: white;
+    }
+
+    .hamburger {
+        display: none;
+        flex-direction: column;
+        cursor: pointer;
+        gap: 5px;
+        padding: 10px;
+    }
+
+    .hamburger span {
+        width: 25px;
+        height: 3px;
+        background: white;
+        border-radius: 3px;
+        transition: 0.3s;
+    }
+
+    @media (max-width: 768px) {
+        .hamburger {
+            display: flex;
+        }
+
+        .nav-links {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            flex-direction: column;
+            gap: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .nav-links.active {
+            max-height: 400px;
+        }
+
+        .nav-links li a {
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            border-left: 3px solid transparent;
+        }
+
+        .nav-links li a:hover,
+        .nav-links li a.active {
+            border-bottom-color: rgba(255,255,255,0.1);
+            border-left-color: white;
+        }
+
+        .logo {
+            font-size: 20px;
+        }
+    }
+</style>
+
+<nav>
+    <div class="nav-container">
+        <div class="logo">
+            <div class="logo-icon">🤖</div>
+            ML Analysis 
+        </div>
+        <div class="hamburger" onclick="toggleMenu()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <ul class="nav-links" id="navLinks">
+                        <li><a href="navbar.html" id="nav-image">home</a></li>
+
+            <li><a href="frontend.html" id="nav-image">Image Analysis</a></li>
+            <li><a href="frontend2.html" id="nav-folder">Folder Analysis</a></li>
+            <li><a href="frontend3.html" id="nav-mining">Data Mining</a></li>
+            <li><a href="frontend4.html" id="nav-evaluation">Model Evaluation</a></li>
+        </ul>
+    </div>
+</nav>
+    <div class="container">
+        <h1>🚗 Car Detection Analysis</h1>
+        <p class="subtitle">Upload an image to detect brand, license plate, and damage with bounding boxes</p>
+
+        <div class="upload-section">
+            <input type="file" id="fileInput" accept="image/*">
+            <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                📤 Choose Image
+            </button>
+            <button class="upload-btn" id="analyzeBtn" onclick="analyzeImage()">
+                🔍 Analyze
+            </button>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Analyzing image... Please wait</p>
+        </div>
+
+        <div class="error" id="error"></div>
+
+        <div class="results" id="results">
+            <div class="info-card">
+                <h2>📊 Detection Summary</h2>
+                <div class="info-grid" id="infoGrid"></div>
+            </div>
+
+            <h2 style="margin-bottom: 20px;">🎯 Detection Results with Bounding Boxes</h2>
+            <div class="detection-grid" id="detectionGrid"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000';
+        let selectedFile = null;
+
+        document.getElementById('fileInput').addEventListener('change', (e) => {
+            selectedFile = e.target.files[0];
+            if (selectedFile) {
+                const btn = document.querySelector('.upload-btn');
+                btn.textContent = `✅ ${selectedFile.name}`;
+            }
+        });
+
+        async function analyzeImage() {
+            if (!selectedFile) {
+                showError('Please select an image first!');
+                return;
+            }
+
+            // Show loading
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('analyzeBtn').disabled = true;
+
+            // Create form data
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+
+            try {
+                const response = await fetch(`${API_URL}/analyze-single-image-upload/`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                displayResults(data);
+
+            } catch (error) {
+                console.error('Error:', error);
+                showError(`Error analyzing image: ${error.message}`);
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('analyzeBtn').disabled = false;
+            }
+        }
+
+        function displayResults(data) {
+            // Show results section
+            document.getElementById('results').style.display = 'block';
+
+            // Display summary info
+            const infoGrid = document.getElementById('infoGrid');
+            infoGrid.innerHTML = `
+                <div class="info-item">
+                    <div class="info-label">📷 Image Name</div>
+                    <div class="info-value">${data.image_name}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">🏷️ Brand</div>
+                    <div class="info-value">${data.brand}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">🚘 License Plate</div>
+                    <div class="info-value">${data.plate}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">🌍 Country</div>
+                    <div class="info-value">${data.country}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">⏳ Vehicle Age</div>
+                    <div class="info-value">${data.age}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">🔧 Damage Detected</div>
+                    <div class="info-value">${data.damage.join(', ')}</div>
+                </div>
+            `;
+
+            // Display detection cards
+            const detectionGrid = document.getElementById('detectionGrid');
+            detectionGrid.innerHTML = '';
+
+            // Brand Detection Card
+            if (data.brand_image_base64 && data.brand_boxes.length > 0) {
+                detectionGrid.innerHTML += createDetectionCard(
+                    '🏷️ Brand Detection',
+                    data.brand_image_base64,
+                    data.brand_boxes,
+                    'brand'
+                );
+            }
+
+            // License Plate Detection Card
+            if (data.plate_image_base64 && data.plate_boxes.length > 0) {
+                detectionGrid.innerHTML += createDetectionCard(
+                    '🚘 License Plate Detection',
+                    data.plate_image_base64,
+                    data.plate_boxes,
+                    'plate'
+                );
+            }
+
+            // Cropped Plate Card
+            if (data.plate_cropped_base64) {
+                detectionGrid.innerHTML += `
+                    <div class="detection-card">
+                        <div class="detection-header header-plate">✂️ Cropped License Plate</div>
+                        <img src="data:image/jpeg;base64,${data.plate_cropped_base64}" class="detection-image" alt="Cropped Plate">
+                        <div class="detection-info">
+                            <div class="cropped-plate-info">
+                                <p><strong>📝 Extracted Text:</strong> <span style="color: #2563eb; font-weight: bold;">${data.plate}</span></p>
+                                <p><strong>🌍 Country:</strong> <span style="color: #2563eb; font-weight: bold;">${data.country}</span></p>
+                                <p><strong>⏳ Age:</strong> <span style="color: #2563eb; font-weight: bold;">${data.age}</span></p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Damage Detection Card
+            if (data.damage_image_base64 && data.damage_boxes.length > 0) {
+                detectionGrid.innerHTML += createDetectionCard(
+                    '🔧 Damage Detection',
+                    data.damage_image_base64,
+                    data.damage_boxes,
+                    'damage'
+                );
+            }
+        }
+
+        function createDetectionCard(title, imageBase64, boxes, type) {
+            let boxesHtml = '';
+            let headerClass = '';
+            let confidenceClass = '';
+            
+            if (type === 'brand') {
+                headerClass = 'header-brand';
+                confidenceClass = 'confidence-red';
+            } else if (type === 'plate') {
+                headerClass = 'header-plate';
+                confidenceClass = 'confidence-blue';
+            } else if (type === 'damage') {
+                headerClass = 'header-damage';
+                confidenceClass = 'confidence-green';
+            }
+            
+            if (boxes && boxes.length > 0) {
+                boxesHtml = '<div class="boxes-list">';
+                boxes.forEach((box, index) => {
+                    const confidence = (box.confidence * 100).toFixed(1);
+                    boxesHtml += `
+                        <div class="box-item">
+                            <strong>Detection ${index + 1}:</strong> ${box.class_name}
+                            <span class="confidence ${confidenceClass}">${confidence}%</span>
+                            <br>
+                            <small style="color: #6b7280;">Box: (${Math.round(box.x1)}, ${Math.round(box.y1)}) → (${Math.round(box.x2)}, ${Math.round(box.y2)})</small>
+                        </div>
+                    `;
+                });
+                boxesHtml += '</div>';
+            }
+
+            return `
+                <div class="detection-card">
+                    <div class="detection-header ${headerClass}">${title}</div>
+                    <img src="data:image/jpeg;base64,${imageBase64}" class="detection-image" alt="${title}">
+                    <div class="detection-info">
+                        <strong>🎯 Detections Found:</strong> <span style="color: #667eea; font-weight: bold;">${boxes.length}</span>
+                        ${boxesHtml}
+                    </div>
+                </div>
+            `;
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = '❌ ' + message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
