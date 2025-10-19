@@ -1,11 +1,10 @@
 # app/utils/ocr_utils.py - Version améliorée
 import cv2
-import numpy as np
 import os
 import re
 import easyocr
-from typing import Tuple, List, Optional
 from datetime import datetime
+import torch
 
 class WorldwidePlateOCR:
     def __init__(self):

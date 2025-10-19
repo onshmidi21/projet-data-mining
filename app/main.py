@@ -1,20 +1,21 @@
 # main.py - Complete FastAPI Application with Model Testing (TorchMetrics Only) - CORRECTED
-from app.utils.data_mining import detect_anomalies, find_association_rules, perform_clustering, predict_damage_risk
 from fastapi import FastAPI, HTTPException, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 import os
 import pandas as pd
 import numpy as np
-from typing import List, Optional
-from pydantic import BaseModel
-from app.utils.yolo_utils import detect_brand, detect_plate, detect_damage, brand_model, plate_model, damage_model
-from app.utils.ocr_utils import extract_text_ocr, extract_country_and_age
 import cv2
 import base64
 import torch
 import time
 from pathlib import Path
+from typing import List, Optional
+from pydantic import BaseModel
+from app.utils.rapport import descriptive_analysis_by_brand, descriptive_analysis_by_country, descriptive_analysis_by_damage_type, generate_comprehensive_report, prepare_and_clean_data
+from app.utils.yolo_utils import detect_brand, detect_plate, detect_damage, brand_model, plate_model, damage_model
+from app.utils.ocr_utils import extract_text_ocr, extract_country_and_age
+from app.utils.data_mining import detect_anomalies, find_association_rules, perform_clustering, predict_damage_risk
 
 # Import torchmetrics pour les métriques
 try:
@@ -31,6 +32,21 @@ RESULTS = []
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 # ==================== PYDANTIC MODELS ====================
+class ReportSummary(BaseModel):
+    total_vehicles: int
+    damaged_vehicles: int
+    damage_rate: float
+    total_damage_cost: float
+    avg_damage_cost: float
+    avg_age: float
+
+class ReportResponse(BaseModel):
+    status: str
+    summary: ReportSummary
+    by_brand: dict
+    by_country: dict
+    by_damage_type: dict
+    report_text: str
 
 class MiningResult(BaseModel):
     status: str
@@ -537,6 +553,47 @@ async def analyze_folder(folder_path: str):
             "brands_detected": len([r for r in RESULTS if r['brand'] != 'Unknown']),
             "damage_detected": len([r for r in RESULTS if r['damage'] != ["No damage"]])
         }
+    }
+
+@app.post("/generate-report/", response_model=ReportResponse)
+async def generate_report():
+    csv_path = "app/data/results.csv"
+    
+    if not RESULTS:
+        if os.path.exists(csv_path):
+            df = pd.read_csv(csv_path)
+            RESULTS.extend(df.to_dict('records'))
+        else:
+            raise HTTPException(status_code=400, detail="No results. Run /analyze-folder/ first.")
+    
+    df = pd.DataFrame(RESULTS)
+    if df.empty:
+        raise HTTPException(status_code=400, detail="No data to analyze.")
+
+    df_clean = prepare_and_clean_data(df)
+    
+    by_brand = descriptive_analysis_by_brand(df_clean)
+    by_country = descriptive_analysis_by_country(df_clean)
+    by_damage_type = descriptive_analysis_by_damage_type(df_clean)
+    
+    report_text = generate_comprehensive_report(df)
+    
+    summary_data = {
+        'total_vehicles': len(df_clean),
+        'damaged_vehicles': int((df_clean['has_damage'] == 'Oui').sum()),
+        'damage_rate': float(round((df_clean['has_damage'] == 'Oui').sum() / len(df_clean) * 100, 2)),
+        'total_damage_cost': float(df_clean['damage_cost'].sum()),
+        'avg_damage_cost': float(round(df_clean[df_clean['damage_cost'] > 0]['damage_cost'].mean(), 2)),
+        'avg_age': float(round(df_clean['age'].mean(), 2))
+    }
+    
+    return {
+        "status": "success",
+        "summary": summary_data,
+        "by_brand": by_brand,
+        "by_country": by_country,
+        "by_damage_type": by_damage_type,
+        "report_text": report_text
     }
 
 @app.get("/results/")
